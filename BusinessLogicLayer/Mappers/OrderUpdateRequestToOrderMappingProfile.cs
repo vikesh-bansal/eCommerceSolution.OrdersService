@@ -6,7 +6,7 @@ using eCommerce.OrdersMicroservice.DataAccessLayer.Entities;
 namespace eCommerce.OrdersMicroservice.BusinessLogicLayer.Mappers;
 public class OrderUpdateRequestToOrderMappingProfile : Profile
 {
-    OrderUpdateRequestToOrderMappingProfile()
+   public OrderUpdateRequestToOrderMappingProfile()
     {
         CreateMap<OrderUpdateRequest, Order>().ForMember(dest => dest.OrderID, opt => opt.MapFrom(src => src.OrderID))
             .ForMember(dest => dest.UserID, opt => opt.MapFrom(src => src.UserID))

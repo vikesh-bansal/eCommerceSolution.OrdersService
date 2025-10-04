@@ -6,7 +6,7 @@ namespace eCommerce.OrdersMicroservice.BusinessLogicLayer.Mappers;
 
 public class OrderItemAddRequestToOrderItemMappingProfile:Profile
 {
-    OrderItemAddRequestToOrderItemMappingProfile()
+   public OrderItemAddRequestToOrderItemMappingProfile()
     {
         CreateMap<OrderItemAddRequest, OrderItem>().ForMember(dest => dest.ProductID, opt => opt.MapFrom(src => src.ProductID))
             .ForMember(dest => dest.UnitPrice, opt => opt.MapFrom(src => src.UnitPrice))

@@ -85,7 +85,7 @@ public class OrderService : IOrdersService
     {
         FilterDefinition<Order> filter = Builders<Order>.Filter.Eq(temp => temp.OrderID, orderID);
         Order? existingOrder = await _ordersRepository.GetOrderByCondition(filter);
-        if (existingOrder != null)
+        if (existingOrder == null)
         {
             return false;
         }

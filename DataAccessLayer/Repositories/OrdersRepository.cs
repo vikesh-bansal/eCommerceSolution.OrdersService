@@ -59,6 +59,7 @@ public class OrdersRepository : IOrdersRepository
         if (existingOrder == null) {
             return null;
         }
+        order._id = existingOrder._id;
      ReplaceOneResult replaceOneResult=   await _orders.ReplaceOneAsync(filter, order);
         return order;
     }

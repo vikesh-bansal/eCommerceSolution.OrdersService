@@ -69,7 +69,7 @@ namespace OrdersMicroservice.API.ApiControllers
             OrderResponse? orderResponse= await _ordersService.AddOrder(order);
             if (orderResponse == null)
             {
-                return Problem("Error in adding product");
+                return Problem("Error in adding order");
             }
             return Created($"api/Orders/search/orderid/{orderResponse?.OrderID}",orderResponse);
 
@@ -88,7 +88,7 @@ namespace OrdersMicroservice.API.ApiControllers
             OrderResponse? orderResponse = await _ordersService.UpdateOrder(order);
             if (orderResponse == null)
             {
-                return Problem("Error in adding product");
+                return Problem("Error in updating order");
             }
             return Ok(orderResponse);
 
@@ -104,7 +104,7 @@ namespace OrdersMicroservice.API.ApiControllers
             bool isDeleted = await _ordersService.DeleteOrder(orderID);
             if (!isDeleted)
             {
-                return Problem("Error in deleting product");
+                return Problem("Error in deleting order");
             }
             return Ok(isDeleted);
 

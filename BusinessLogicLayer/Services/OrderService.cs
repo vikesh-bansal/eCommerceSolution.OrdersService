@@ -1,16 +1,12 @@
 ﻿using AutoMapper;
 using eCommerce.OrdersMicroservice.BusinessLogicLayer.DTO;
+using eCommerce.OrdersMicroservice.BusinessLogicLayer.HttpClients;
 using eCommerce.OrdersMicroservice.BusinessLogicLayer.ServiceContracts;
 using eCommerce.OrdersMicroservice.DataAccessLayer.Entities;
 using eCommerce.OrdersMicroservice.DataAccessLayer.RepositoryContracts;
 using FluentValidation;
 using FluentValidation.Results;
-using MongoDB.Driver;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using MongoDB.Driver; 
 
 namespace eCommerce.OrdersMicroservice.BusinessLogicLayer.Services;
 
@@ -22,7 +18,8 @@ public class OrderService : IOrdersService
     private readonly IValidator<OrderItemAddRequest> _orderItemAddRequestValidator;
     private readonly IValidator<OrderUpdateRequest> _orderUpdateRequestValidator;
     private readonly IValidator<OrderItemUpdateRequest> _orderItemUpdateRequestValidator;
-    public OrderService(IOrdersRepository ordersRepository, IMapper mapper, IValidator<OrderAddRequest> orderAddRequestValidator, IValidator<OrderItemAddRequest> orderItemAddRequestValidator, IValidator<OrderUpdateRequest> orderUpdateRequestValidator, IValidator<OrderItemUpdateRequest> orderItemUpdateRequestValidator)
+    private readonly UsersMicroserviceClient _usersMicroserviceClient;
+    public OrderService(IOrdersRepository ordersRepository, IMapper mapper, IValidator<OrderAddRequest> orderAddRequestValidator, IValidator<OrderItemAddRequest> orderItemAddRequestValidator, IValidator<OrderUpdateRequest> orderUpdateRequestValidator, IValidator<OrderItemUpdateRequest> orderItemUpdateRequestValidator, UsersMicroserviceClient usersMicroserviceClient)
     {
         _ordersRepository = ordersRepository;
         _mapper = mapper;
@@ -30,6 +27,7 @@ public class OrderService : IOrdersService
         _orderItemAddRequestValidator = orderItemAddRequestValidator;
         _orderUpdateRequestValidator = orderUpdateRequestValidator;
         _orderItemUpdateRequestValidator = orderItemUpdateRequestValidator;
+        _usersMicroserviceClient = usersMicroserviceClient;
 
     }
     public async Task<OrderResponse?> AddOrder(OrderAddRequest orderAddRequest)
@@ -60,6 +58,11 @@ public class OrderService : IOrdersService
 
         // TO DO: Add logic for checking if UserID exists in Users microservice
 
+        UserDTO? user = await _usersMicroserviceClient.GetUserByUserID(orderAddRequest.UserID);
+        if (user == null)
+        {
+            throw new ArgumentException("Invalid User ID");
+        }
 
         //Convert data from orderaddrequest to order and post
         Order orderInput = _mapper.Map<Order>(orderAddRequest);
@@ -112,7 +115,7 @@ public class OrderService : IOrdersService
 
     public async Task<List<OrderResponse?>> GetOrdersByCondition(FilterDefinition<Order> filter)
     {
-       IEnumerable<Order?> orders= await _ordersRepository.GetOrdersByCondition(filter); 
+        IEnumerable<Order?> orders = await _ordersRepository.GetOrdersByCondition(filter);
 
         List<OrderResponse?> orderResponse = _mapper.Map<List<OrderResponse?>>(orders);
         return orderResponse;
@@ -141,8 +144,12 @@ public class OrderService : IOrdersService
                 throw new ArgumentException(errors);
             }
         }
-        //To Do: Add logic to check if UserID is valid or not
-
+        //To Do: Add logic to check if UserID is valid or not via UsersMicroservice  
+        UserDTO? user = await _usersMicroserviceClient.GetUserByUserID(orderUpdateRequest.UserID);
+        if (user == null)
+        {
+            throw new ArgumentException("Invalid User ID");
+        }
 
         // Map orderupdate request with order
         Order orderToUpdate = _mapper.Map<Order>(orderUpdateRequest);

@@ -1,4 +1,6 @@
 ﻿using eCommerce.OrdersMicroservice.BusinessLogicLayer.DTO;
+using Microsoft.Extensions.Logging;
+using Polly.CircuitBreaker;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,32 +13,47 @@ namespace eCommerce.OrdersMicroservice.BusinessLogicLayer.HttpClients
     public class UsersMicroserviceClient
     {
         private readonly HttpClient _httpClient;
-        public UsersMicroserviceClient(HttpClient httpClient)
+        private readonly ILogger<UsersMicroserviceClient> _logger;
+        public UsersMicroserviceClient(HttpClient httpClient, ILogger<UsersMicroserviceClient> logger)
         {
             _httpClient = httpClient;
+            _logger = logger;
         }
 
         public async Task<UserDTO?> GetUserByUserID(Guid userID)
         {
-            HttpResponseMessage response = await _httpClient.GetAsync($"/api/users/{userID}");
-            if (!response.IsSuccessStatusCode) {
-                if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            try
+            {
+                HttpResponseMessage response = await _httpClient.GetAsync($"/api/users/{userID}");
+                if (!response.IsSuccessStatusCode)
                 {
-                    return null;
+                    if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    {
+                        return null;
+                    }
+                    else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+                    {
+                        throw new HttpRequestException("Bad request", null, System.Net.HttpStatusCode.BadRequest);
+                    }
+                    else
+                    {
+                        //throw new HttpRequestException($"Http request failed with status code {response.StatusCode}");
+                        return new UserDTO(PersonName: "Temporarily Unavailable", Email: "Temporarily Unavailable", Gender: "Temporarily Unavailable", UserID: Guid.Empty);  //Implementing Fault data in case of exception
+                    }
                 }
-                else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest) { 
-                throw new HttpRequestException("Bad request", null, System.Net.HttpStatusCode.BadRequest);
-                }
-                else
+                UserDTO? user = await response.Content.ReadFromJsonAsync<UserDTO?>();
+                if (user == null)
                 {
-                    throw new HttpRequestException($"Http request failed with status code {response.StatusCode}");
+                    throw new ArgumentException("Invalid User ID");
                 }
+                return user;
             }
-            UserDTO? user = await response.Content.ReadFromJsonAsync<UserDTO?>();
-            if (user == null) {
-                throw new ArgumentException("Invalid User ID");
+            catch(BrokenCircuitException ex)
+            {
+                _logger.LogError(ex, "Request failed because of circuit breaker is in Open state. Returning dummy data.");
+                //Retun fault data in case of excetions when circuit breaker opened due repetitive failures
+                return new UserDTO(PersonName: "Temporarily Unavailable", Email: "Temporarily Unavailable", Gender: "Temporarily Unavailable", UserID: Guid.Empty);  //Implementing Fault data in case of exception
             }
-            return user;
 
         }
     }

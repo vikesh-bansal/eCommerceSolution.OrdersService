@@ -1,4 +1,5 @@
 ﻿using eCommerce.OrdersMicroservice.BusinessLogicLayer.DTO;
+using Microsoft.Extensions.Logging;
 using System.Net.Http.Json;
 
 namespace eCommerce.OrdersMicroservice.BusinessLogicLayer.HttpClients;
@@ -6,9 +7,11 @@ namespace eCommerce.OrdersMicroservice.BusinessLogicLayer.HttpClients;
 public class ProductsMicroserviceClient
 {
     private readonly HttpClient _httpClient;
-    public ProductsMicroserviceClient(HttpClient httpClient)
+    private readonly ILogger<ProductsMicroserviceClient> _iLogger;
+    public ProductsMicroserviceClient(HttpClient httpClient, ILogger<ProductsMicroserviceClient> iLogger)
     {
         _httpClient = httpClient;
+        _iLogger = iLogger;
     }
     public async Task<ProductDTO?> GetProductByProductId(Guid productId)
     {

@@ -18,6 +18,7 @@ public static class DependecyInjection
         services.AddValidatorsFromAssemblyContaining<OrderAddRequestValidator>();// load all validators assembly
         services.AddAutoMapper(cfg=> { },typeof(OrderToOrderResponseMappingProfile).Assembly); // load all mapping profile assembly
         services.AddScoped<IOrdersService, OrderService>();
+        services.AddStackExchangeRedisCache(options => { options.Configuration = $"{configuration["REDIS_HOST"]}:{configuration["REDIS_PORT"]}"; });
         return services;
     }
 }

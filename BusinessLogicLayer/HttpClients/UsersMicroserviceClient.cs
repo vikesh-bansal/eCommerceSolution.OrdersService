@@ -1,6 +1,7 @@
 ﻿using eCommerce.OrdersMicroservice.BusinessLogicLayer.DTO;
 using Microsoft.Extensions.Logging;
 using Polly.CircuitBreaker;
+using Polly.Timeout;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -52,7 +53,12 @@ namespace eCommerce.OrdersMicroservice.BusinessLogicLayer.HttpClients
             {
                 _logger.LogError(ex, "Request failed because of circuit breaker is in Open state. Returning dummy data.");
                 //Retun fault data in case of excetions when circuit breaker opened due repetitive failures
-                return new UserDTO(PersonName: "Temporarily Unavailable", Email: "Temporarily Unavailable", Gender: "Temporarily Unavailable", UserID: Guid.Empty);  //Implementing Fault data in case of exception
+                return new UserDTO(PersonName: "Temporarily Unavailable (circuit breaker)", Email: "Temporarily Unavailable (circuit breaker)", Gender: "Temporarily Unavailable (circuit breaker)", UserID: Guid.Empty);  //Implementing Fault data in case of exception
+            }
+            catch(TimeoutRejectedException ex)
+            {                
+                _logger.LogError(ex, "Timeout occured while fetching user data. Returning dummy data.");
+                return new UserDTO(PersonName: "Temporarily Unavailable (timeout)", Email: "Temporarily Unavailable (timeout)", Gender: "Temporarily Unavailable (timeout)", UserID: Guid.Empty);  //Implementing Fault data in case of time out exception
             }
 
         }

@@ -2,7 +2,9 @@
 using eCommerce.OrdersMicroservice.BusinessLogicLayer.DTO;
 using Microsoft.Extensions.Logging;
 using Polly;
+using Polly.Bulkhead;
 using Polly.Fallback;
+using Polly.Wrap;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,21 +16,20 @@ namespace eCommerce.OrdersMicroservice.BusinessLogicLayer.Policies;
 
 public class ProductsMicroservicePolicies : IProductsMicroservicePolicies
 {
+    private readonly IPollyPolicies _pollyPolicies;
     private readonly ILogger<ProductsMicroservicePolicies> _logger;
-    public ProductsMicroservicePolicies(ILogger<ProductsMicroservicePolicies> logger)
+    public ProductsMicroservicePolicies(ILogger<ProductsMicroservicePolicies> logger, IPollyPolicies pollyPolicies)
     {
         _logger = logger;
-    }
-    public IAsyncPolicy<HttpResponseMessage> GetFallbackPolicy()
+        _pollyPolicies = pollyPolicies;
+    }  
+
+    public IAsyncPolicy<HttpResponseMessage> GetCombinedPolicy()
     {
-        AsyncFallbackPolicy<HttpResponseMessage> policy = Policy.HandleResult<HttpResponseMessage>(response => !response.IsSuccessStatusCode).
-            FallbackAsync(async (context) =>
-            {
-                _logger.LogInformation("Fallback triggered: The request failed, returning dummy data");
-                ProductDTO product = new ProductDTO(ProductID: Guid.Empty, ProductName: "Temporarily Unavailable (fallback)", Category: "Temporarily Unavailable (fallback)", UnitPrice: 0, QuantityInStock: 0);
-                var response = new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(JsonSerializer.Serialize(product), Encoding.UTF8, "application/json") };
-                return response;
-            });
+        var fallBackPolicy = _pollyPolicies.GetFallbackPolicy<ProductDTO>(() => new ProductDTO(ProductID: Guid.Empty, ProductName: "Temporarily Unavailable (fallback)", Category: "Temporarily Unavailable (fallback)", UnitPrice: 0, QuantityInStock: 0));
+        var bulkHeadIsolation = _pollyPolicies.GetBulkheadIsolationPolicy(1, 2);
+        AsyncPolicyWrap<HttpResponseMessage> policy = Policy.WrapAsync(fallBackPolicy, bulkHeadIsolation);
         return policy;
+
     }
 }

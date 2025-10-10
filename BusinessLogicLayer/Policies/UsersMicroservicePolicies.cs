@@ -1,4 +1,5 @@
 ﻿using DnsClient.Internal;
+using eCommerce.OrdersMicroservice.BusinessLogicLayer.DTO;
 using Microsoft.Extensions.Logging;
 using Polly;
 using Polly.CircuitBreaker;
@@ -22,6 +23,7 @@ public class UsersMicroservicePolicies : IUsersMicroservicePolicies
         var retryPolicy = _pollyPolicies.GetRetryPolicy(4);
         var circuitBreakerPolicy = _pollyPolicies.GetCircuitBreakerPolicy(2, TimeSpan.FromSeconds(10));
         var timeoutPolicy = _pollyPolicies.GetTimeoutPolicy(TimeSpan.FromSeconds(5));
+        var fallBack = _pollyPolicies.GetFallbackPolicy(() => new UserDTO(UserID: Guid.NewGuid(), Email: "Temporarily Unvavailable (fallback)", PersonName: "Temporarily Unavailable (fallback)", Gender: "Temporarily unavailable (fallback)"));
         AsyncPolicyWrap<HttpResponseMessage> wrappedPolicy = Policy.WrapAsync(retryPolicy, circuitBreakerPolicy, timeoutPolicy);
         return wrappedPolicy;
     }

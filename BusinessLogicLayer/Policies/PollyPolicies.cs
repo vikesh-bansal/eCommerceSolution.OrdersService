@@ -57,7 +57,7 @@ public class PollyPolicies : IPollyPolicies
             {
                 _logger.LogInformation("Fallback triggered: The request failed, returning dummy data");
                 var fallBackData = fallBackDataFactory();                
-                var response = new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(JsonSerializer.Serialize(fallBackData), Encoding.UTF8, "application/json") };
+                var response = new HttpResponseMessage(System.Net.HttpStatusCode.ServiceUnavailable) { Content = new StringContent(JsonSerializer.Serialize(fallBackData), Encoding.UTF8, "application/json") };
                 return response;
             });
         return policy;

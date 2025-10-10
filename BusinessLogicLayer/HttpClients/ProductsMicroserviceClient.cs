@@ -33,7 +33,7 @@ public class ProductsMicroserviceClient
             }
             else
             {
-                HttpResponseMessage _response = await _httpClient.GetAsync($"/api/products/search/product-id/{productId}");
+                HttpResponseMessage _response = await _httpClient.GetAsync($"/gateway/products/search/product-id/{productId}");
                 if (!_response.IsSuccessStatusCode)
                 {
                     if (_response.StatusCode == System.Net.HttpStatusCode.ServiceUnavailable)

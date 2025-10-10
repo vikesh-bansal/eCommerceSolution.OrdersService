@@ -1,7 +1,7 @@
 {
   "Routes": [
     {
-      "UpstreamPathTemplate": "/gateway/Orders",
+      "UpstreamPathTemplate": "/gateway/Orders/",
       "DownstreamPathTemplate": "/api/Orders",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
@@ -15,10 +15,14 @@
       */
       "UpstreamHttpMethod": [ "Get", "Post", "Options" ],
       "UpstreamScheme": "http",
-      "RouteIsCaseSensitive": false
+      "RouteIsCaseSensitive": false,
+      "FileCacheOptions": {
+        "TtlSeconds": 30,
+        "Region": "orders"
+      }
     },
     {
-      "UpstreamPathTemplate": "/gateway/Orders/search/productid/{productID}",
+      "UpstreamPathTemplate": "/gateway/Orders/search/productid/{productID}/",
       "DownstreamPathTemplate": "/api/Orders/search/productid/{productID}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
@@ -32,7 +36,7 @@
       "RouteIsCaseSensitive": false
     },
     {
-      "UpstreamPathTemplate": "/gateway/Orders/search/orderid/{orderID}",
+      "UpstreamPathTemplate": "/gateway/Orders/search/orderid/{orderID}/",
       "DownstreamPathTemplate": "/api/Orders/search/orderid/{orderID}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
@@ -46,7 +50,7 @@
       "RouteIsCaseSensitive": false
     },
     {
-      "UpstreamPathTemplate": "/gateway/Orders/search/orderDate/{orderDate}",
+      "UpstreamPathTemplate": "/gateway/Orders/search/orderDate/{orderDate}/",
       "DownstreamPathTemplate": "/api/Orders/search/orderDate/{orderDate}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
@@ -60,7 +64,7 @@
       "RouteIsCaseSensitive": false
     },
     {
-      "UpstreamPathTemplate": "/gateway/Orders/search/userid/{userID}",
+      "UpstreamPathTemplate": "/gateway/Orders/search/userid/{userID}/",
       "DownstreamPathTemplate": "/api/Orders/search/userid/{userID}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
@@ -74,7 +78,7 @@
       "RouteIsCaseSensitive": false
     },
     {
-      "UpstreamPathTemplate": "/gateway/Orders/{orderID}",
+      "UpstreamPathTemplate": "/gateway/Orders/{orderID}/",
       "DownstreamPathTemplate": "/gateway/Orders/{orderID}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
@@ -88,7 +92,7 @@
       "RouteIsCaseSensitive": false
     },
     {
-      "UpstreamPathTemplate": "/gateway/Products",
+      "UpstreamPathTemplate": "/gateway/Products/",
       "DownstreamPathTemplate": "/api/Products",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
@@ -99,10 +103,28 @@
       ],
       "UpstreamHttpMethod": [ "Get", "Post", "Put", "Delete", "Options" ],
       "UpstreamScheme": "http",
-      "RouteIsCaseSensitive": false
+      "RouteIsCaseSensitive": false,
+      "QoSOptions": {
+        "ExceptionsAllowedBeforeBreaking": 3,
+        "DurationOfBreak": 100000,
+        "TimeoutValue": 5000
+      },
+      "RetryOptions": {
+        "RetryCount": 3,
+        "RetryOnSeverError": true
+      },
+      "RateLimitOptions": {
+        "Limit": 3,
+        "Period": "60s",
+        "HttpStatusCode": 429,
+        "EnableRateLimiting": true,
+        "PeriodTimespan": 30,
+        "ClientWhitelist": [ "Client1", "Client2" ],
+        "ClientIdHeader": "Client-Id"
+      }
     },
     {
-      "UpstreamPathTemplate": "/gateway/Products/{productID}",
+      "UpstreamPathTemplate": "/gateway/Products/{productID}/",
       "DownstreamPathTemplate": "/api/Products/{productID}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
@@ -116,7 +138,7 @@
       "RouteIsCaseSensitive": false
     },
     {
-      "UpstreamPathTemplate": "/gateway/Products/search/{searchString}",
+      "UpstreamPathTemplate": "/gateway/Products/search/{searchString}/",
       "DownstreamPathTemplate": "/api/Products/search/{searchString}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
@@ -130,7 +152,7 @@
       "RouteIsCaseSensitive": false
     },
     {
-      "UpstreamPathTemplate": "/gateway/Products/search/product-id/{ProductID}",
+      "UpstreamPathTemplate": "/gateway/Products/search/product-id/{ProductID}/",
       "DownstreamPathTemplate": "/api/Products/search/product-id/{ProductID}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
@@ -144,8 +166,8 @@
       "RouteIsCaseSensitive": false
     },
     {
-      "UpstreamPathTemplate": "/gateway/Users/Auth/register",
-      "DownstreamPathTemplate": "/api/Users/Auth/register",
+      "UpstreamPathTemplate": "/gateway/Users/Auth/register/",
+      "DownstreamPathTemplate": "/api/Auth/register",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -158,8 +180,8 @@
       "RouteIsCaseSensitive": false
     },
     {
-      "UpstreamPathTemplate": "/gateway/Users/Auth/login",
-      "DownstreamPathTemplate": "/api/Users/Auth/login",
+      "UpstreamPathTemplate": "/gateway/Users/Auth/login/",
+      "DownstreamPathTemplate": "/api/Auth/login",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -172,7 +194,7 @@
       "RouteIsCaseSensitive": false
     },
     {
-      "UpstreamPathTemplate": "/gateway/Users/{userID}",
+      "UpstreamPathTemplate": "/gateway/Users/{userID}/",
       "DownstreamPathTemplate": "/api/Users/{userID}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [

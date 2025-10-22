@@ -69,10 +69,7 @@ public class ProductsMicroserviceClient
 
                     //Key: product: {productID}
                     //Value: { "ProductName": "..", .. }
-                    string productJson = JsonSerializer.Serialize(product);
-                    DistributedCacheEntryOptions dOption = new DistributedCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromSeconds(300)).SetSlidingExpiration(TimeSpan.FromSeconds(100));
-                    string cacheKeytoWrite = $"product:{productId}";
-                    _distributedCache.SetString(cacheKeytoWrite, productJson, dOption);
+                    CreateProductCache(productId, product);
 
                 }
             }
@@ -85,5 +82,18 @@ public class ProductsMicroserviceClient
             return new ProductDTO(ProductID: Guid.NewGuid(), ProductName: "Temporarily Unavailable (Bulkhead)", Category: "Temporarily Unavaliable (Bulkhead)", UnitPrice: 0, QuantityInStock: 0);
         }
 
+    }
+
+    public void CreateProductCache(Guid productId, ProductDTO? product)
+    {
+        string productJson = JsonSerializer.Serialize(product);
+        DistributedCacheEntryOptions dOption = new DistributedCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromSeconds(300)).SetSlidingExpiration(TimeSpan.FromSeconds(100));
+        string cacheKeytoWrite = $"product:{productId}";
+        _distributedCache.SetString(cacheKeytoWrite, productJson, dOption);
+    }
+    public async Task RemoveProductCache(Guid productId)
+    { 
+        string cacheKeytobeRemove= $"product:{productId}";
+       await  _distributedCache.RemoveAsync(cacheKeytobeRemove);
     }
 }
